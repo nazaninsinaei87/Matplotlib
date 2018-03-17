@@ -1,10 +1,13 @@
 
 # Pyber Ride Sharing
 
-Trend1: Urban cities have highest number of ride counts (68.4%) as well as driver counts (86%). Also these cities have the lowest
-average fare. 
-Trend2: A city in Rural area has the highest average dollar fare ($50) and the lowest number of rides (1).
-Trend3: higher number of drivers will increade the number of rides and will eventually reduce the fare.
+Trend1: Urban cities have highest number of ride counts (68.4%) as well as driver counts (77.8%). Also these cities have the lowest average fare. 
+
+Trend2: Rural area has the highest average dollar fare ($50) and the lowest number of rides (1).
+
+Trend3: Higher number of drivers will increase the number of rides and will eventually reduce the fare.
+
+Observation: City data set has a duplicate record (city of Port James) which needs to be merged and summed on driver count before merging with ride data.
 
 # Analysis
 
@@ -119,7 +122,83 @@ avg_fare = merged_data.groupby(['city_type','city','driver_count']).mean()['fare
 total_ride = merged_data.groupby(['city_type','city','driver_count']).nunique()['ride_id']
 # create a dataframe to have average fare and total ride count
 ride_share = pd.DataFrame({"Average Fare ($)" : avg_fare, "Total Number of Rides": total_ride}).reset_index()
+ride_share.head()
 ```
+
+
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>city_type</th>
+      <th>city</th>
+      <th>driver_count</th>
+      <th>Average Fare ($)</th>
+      <th>Total Number of Rides</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Rural</td>
+      <td>East Leslie</td>
+      <td>9</td>
+      <td>33.660909</td>
+      <td>11</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Rural</td>
+      <td>East Stephen</td>
+      <td>6</td>
+      <td>39.053000</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Rural</td>
+      <td>East Troybury</td>
+      <td>3</td>
+      <td>33.244286</td>
+      <td>7</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Rural</td>
+      <td>Erikport</td>
+      <td>3</td>
+      <td>30.043750</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Rural</td>
+      <td>Hernandezshire</td>
+      <td>10</td>
+      <td>32.002222</td>
+      <td>9</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
 
 
 ```python
@@ -219,11 +298,8 @@ plt.show()
 
 
 ```python
-# Calculate the total ride count
-total_ride = merged_data.ride_id.count()
-# Grouping by city type to get the total ride by city type
-ride_count_type = merged_data.groupby('city_type').count()['ride_id']
-ride_type_percent = (ride_count_type/total_ride)*100
+# calculate the percentage of total rides per city type
+ride_type_percent = 100* (ride_share.groupby('city_type').sum()['Total Number of Rides']/ride_share['Total Number of Rides'].sum())
 # create the pie chart, defined explode, labels, colors and the percentage to show on the chart
 plt.pie(ride_type_percent,explode=explode,labels=city_type, colors=colors, autopct="%1.1f%%", shadow=True, startangle=140)
 plt.title("% of Total Rides By City Type")
@@ -239,9 +315,9 @@ plt.show()
 
 ```python
 # Calculate the total driver count
-total_driver = merged_data.driver_count.sum()
+total_driver = new_city_data.driver_count.sum()
 # Grouped by city type to get the total driver count by city type
-driver_count_type = merged_data.groupby('city_type').sum()['driver_count']
+driver_count_type = new_city_data.groupby('type').sum()['driver_count']
 driver_count_percent = 100*(driver_count_type/total_driver)
 # create the pie chart, defined explode, labels, colors and the percentage to show on the chart
 plt.pie(driver_count_percent,explode=explode,labels=city_type, colors=colors, autopct="%1.1f%%", shadow=True, startangle=180)
